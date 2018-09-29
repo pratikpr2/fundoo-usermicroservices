@@ -19,5 +19,5 @@ public class BCryptGenerator {
 	public ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
-	
+
 }

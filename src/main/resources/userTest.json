@@ -1,0 +1,401 @@
+{
+	"TC-001": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "pratik@gmail.com",
+				"password": "mojojojo123"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "User With Email pratik@gmail.com Not Registered",
+				"status": 0
+			}
+		}
+	},
+	"TC-002": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "",
+				"password": ""
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Please Enter A valid Email Id",
+				"status": 0
+			}
+		}
+	},
+	"TC-003": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "",
+				"password": "mojojojo123"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Please Enter A valid Email Id",
+				"status": 0
+			}
+		}
+	},
+	"TC-004": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "pratikpr2@gmail.com",
+				"password": ""
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Password Should be of atleast 8 AphaNumeric Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-005": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "pratikpr2@gmail",
+				"password": "mojojojo123"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "OK",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "SuccessFully LoggedIn",
+				"status": 1
+			}
+		}
+	},
+	"TC-006": {
+		"request": {
+			"url": "/login",
+			"headers": {
+				
+			},
+			"body": {
+				"email": "pratik",
+				"password": "mojojojo123"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Please Enter A valid Email Id",
+				"status": 0
+			}
+		}
+	},
+	"TC-008": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "",
+				"emailId": "pratikpr2@gmail.com",
+				"phoneNumber": "9999999999",
+				"password": "mojojojo",
+				"confirmPassword": "mojojojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "User Name should Have atleast 3 Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-010": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "",
+				"phoneNumber": "9999999999",
+				"password": "mojojojo",
+				"confirmPassword": "mojojojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Please Enter a Valid Email Id",
+				"status": 0
+			}
+		}
+	},
+	"TC-011": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr2@gmail",
+				"phoneNumber": "",
+				"password": "mojojojo",
+				"confirmPassword": "mojojojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Contact Number Should be 10 digits Number",
+				"status": 0
+			}
+		}
+	},
+	"TC-012": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail",
+				"phoneNumber": "9999999999",
+				"password": "",
+				"confirmPassword": "mojojojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Password Should be of atleast 8 AphaNumeric Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-013": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail",
+				"phoneNumber": "9999999999",
+				"password": "mojojojo123",
+				"confirmPassword": ""
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Confirm Password Didn't Match With Password",
+				"status": 0
+			}
+		}
+	},
+	"TC-014": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail.com",
+				"phoneNumber": "9999999999",
+				"password": "mojojojo123",
+				"confirmPassword": "abcdefghi"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Confirm Password Didn't Match With Password",
+				"status": 0
+			}
+		}
+	},
+	"TC-015": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr2@gmail.com",
+				"phoneNumber": "9999999999",
+				"password": "mojo",
+				"confirmPassword": "mojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Password Should be of atleast 8 AphaNumeric Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-016": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail.com",
+				"phoneNumber": "9999999999",
+				"password": "mojojojojojojojojo",
+				"confirmPassword": "mojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Password Should be of atleast 8 AphaNumeric Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-017": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail.com",
+				"phoneNumber": "9999999999",
+				"password": "12345678",
+				"confirmPassword": "mojo"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Password Should be of atleast 8 AphaNumeric Characters",
+				"status": 0
+			}
+		}
+	},
+	"TC-018": {
+		"request": {
+			"url": "/register",
+			"headers": {
+				
+			},
+			"body": {
+				"userName": "pratik",
+				"emailId": "pratikpr@gmail.com",
+				"phoneNumber": "abcdefghikj",
+				"password": "mojojojo123",
+				"confirmPassword": "mojojojo123"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Contact Number Should be 10 digits Number",
+				"status": 0
+			}
+		}
+	}
+}
+

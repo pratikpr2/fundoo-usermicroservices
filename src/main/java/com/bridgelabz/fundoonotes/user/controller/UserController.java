@@ -1,7 +1,8 @@
 package com.bridgelabz.fundoonotes.user.controller;
 
+import java.io.IOException;
+
 import javax.mail.MessagingException;
-import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoonotes.user.exception.ActivationException;
 import com.bridgelabz.fundoonotes.user.exception.ChangePassException;
+import com.bridgelabz.fundoonotes.user.exception.LoginException;
 import com.bridgelabz.fundoonotes.user.exception.MalformedUUIDException;
 import com.bridgelabz.fundoonotes.user.exception.RegistrationException;
 import com.bridgelabz.fundoonotes.user.exception.TokenParsingException;
+import com.bridgelabz.fundoonotes.user.exception.UserNotFoundException;
 import com.bridgelabz.fundoonotes.user.model.ChangePassDTO;
 import com.bridgelabz.fundoonotes.user.model.LoginDTO;
 import com.bridgelabz.fundoonotes.user.model.MailUser;
@@ -38,13 +42,16 @@ public class UserController {
 	 * @param response
 	 * @return Login Response
 	 * @throws LoginException
+	 * @throws MessagingException 
 	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ResponseEntity<ResponseDto> login(@RequestBody LoginDTO loginDto,HttpServletResponse res) throws LoginException {
+	public ResponseEntity<ResponseDto> login(@RequestBody LoginDTO loginDto,HttpServletResponse res) throws LoginException, MessagingException {
 
 		String token = userService.login(loginDto);
 		
-		res.setHeader("token", token);
+		System.out.println(token+"in user controller");
+		
+		res.setHeader("jwtoken",token);
 		
 		ResponseDto response = new ResponseDto();
 		response.setMessage("SuccessFully LoggedIn");
@@ -63,11 +70,13 @@ public class UserController {
 	 * @throws MessagingException
 	 */
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
-	public ResponseEntity<ResponseDto> register(@RequestBody RegistrationDTO regDto)
+	public ResponseEntity<ResponseDto> register(@RequestBody RegistrationDTO regDto,HttpServletResponse res)
 			throws RegistrationException, MessagingException {
 
-		userService.register(regDto);
+		String token =userService.register(regDto);
 
+		res.setHeader("token", token);
+		
 		ResponseDto response = new ResponseDto();
 		response.setMessage("SuccessFully Registered");
 		response.setStatus(1);
@@ -143,6 +152,34 @@ public class UserController {
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
 
+	//----------------------Add Profile Image---------------------
+	@RequestMapping(value = "/addImage",method = RequestMethod.PUT)
+	private ResponseEntity<ResponseDto> uploadProfileImage(@RequestParam String token,@RequestParam MultipartFile file,HttpServletResponse res) throws TokenParsingException, UserNotFoundException, IOException{
+		
+		String imageUrl =  userService.addimage(token,file);
+		
+		res.setHeader("ImageUrl",imageUrl );
+		
+		ResponseDto response = new ResponseDto();
+		
+		response.setMessage("Image Added");
+		response.setStatus(1);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
+	}
+	//----------------------Remove Profile Image--------------------
+	@RequestMapping(value="/removeImage",method = RequestMethod.PUT)
+	private ResponseEntity<ResponseDto> removeProfileImage(@RequestParam String token,@RequestParam String fileName) throws TokenParsingException, UserNotFoundException{
+		
+		userService.removeImage(token,fileName);
+		
+		ResponseDto response = new ResponseDto();
+		
+		response.setMessage("Image Removed");
+		response.setStatus(1);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
+	}
+	
 }

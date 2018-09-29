@@ -1,7 +1,5 @@
 package com.bridgelabz.fundoonotes.user.exceptionhandler;
 
-import javax.security.auth.login.LoginException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -11,10 +9,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.bridgelabz.fundoonotes.user.exception.ActivationException;
 import com.bridgelabz.fundoonotes.user.exception.ChangePassException;
+import com.bridgelabz.fundoonotes.user.exception.LoginException;
 import com.bridgelabz.fundoonotes.user.exception.MailException;
 import com.bridgelabz.fundoonotes.user.exception.MalformedUUIDException;
 import com.bridgelabz.fundoonotes.user.exception.RegistrationException;
 import com.bridgelabz.fundoonotes.user.exception.TokenParsingException;
+import com.bridgelabz.fundoonotes.user.exception.UserNotFoundException;
 import com.bridgelabz.fundoonotes.user.model.ResponseDto;
 
 @ControllerAdvice
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler{
 		ResponseDto response = new ResponseDto();
 		
 		response.setMessage(exception.getMessage());
-		response.setStatus(1);
+		response.setStatus(0);
 		
 		return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
 	}
@@ -113,6 +113,19 @@ public class GlobalExceptionHandler{
 		
 		response.setMessage(exception.getMessage());
 		response.setStatus(-5);
+		
+		return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<ResponseDto> invaliduserException(UserNotFoundException exception){
+		
+		logger.error("Error Occured while parsing UUID: " + exception.getMessage(),exception);
+		
+		ResponseDto response = new ResponseDto();
+		
+		response.setMessage(exception.getMessage());
+		response.setStatus(-6);
 		
 		return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
 	}

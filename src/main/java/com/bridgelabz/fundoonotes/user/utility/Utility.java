@@ -1,12 +1,15 @@
 package com.bridgelabz.fundoonotes.user.utility;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoonotes.user.exception.ChangePassException;
+import com.bridgelabz.fundoonotes.user.exception.LoginException;
 import com.bridgelabz.fundoonotes.user.exception.MailException;
 import com.bridgelabz.fundoonotes.user.exception.MalformedUUIDException;
 import com.bridgelabz.fundoonotes.user.exception.RegistrationException;
@@ -18,53 +21,54 @@ import com.bridgelabz.fundoonotes.user.model.User;
 import com.bridgelabz.fundoonotes.user.repository.UserRepository;
 import com.bridgelabz.fundoonotes.user.token.JwtToken;
 
-@Service
 public class Utility {
 	
 	@Autowired 
 	UserRepository mongoRepo;
 	
 	private static final String CONTACT_PATTERN = "^[0-9]{10}$";
-	//private static final String KEY="todoapp";
+	private static final String EMAIL_PATTERN = "^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$";
+	private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
 	
-	public static boolean validateRegUser(RegistrationDTO registrationDto) throws RegistrationException{
-		boolean flag = false;
+	public static void validateRegUser(RegistrationDTO registrationDto) throws RegistrationException{
+		
 		if(registrationDto.getUserName()==null || registrationDto.getUserName().length()<3) {
 			throw new RegistrationException("User Name should Have atleast 3 Characters");
+		}
+		else if(registrationDto.getEmailId().trim().length()==0) {
+			throw new RegistrationException("Please Enter a Valid Email Id");
 		}
 		else if(registrationDto.getPhoneNumber()==null || !registrationDto.getPhoneNumber().matches(CONTACT_PATTERN)) {
 			throw new RegistrationException("Contact Number Should be 10 digits Number");
 		}
-		else if(registrationDto.getPassword()==null || registrationDto.getPassword().length() < 8) {
-			throw new RegistrationException("Password Should be of atleast 8 Characters");
+		else if(registrationDto.getPassword()==null || !registrationDto.getPassword().matches(PASSWORD_PATTERN)) {
+			throw new RegistrationException("Password Should be of atleast 8 AphaNumeric Characters");
 		}
+	
 		else if(registrationDto.getConfirmPassword()==null || !registrationDto.getConfirmPassword().equals(registrationDto.getPassword())) {
 			throw new RegistrationException("Confirm Password Didn't Match With Password");
 		}
-		else {
-			flag=true;
-		}
-		return flag;
+		
 	}
 	
 	public static void validateLoginUser(LoginDTO loginDto) throws LoginException {
-		if(loginDto.getEmail()==null ) {
-			throw new LoginException("Invalid Email");
+		if(loginDto.getEmail().trim().length()==0 || loginDto.getEmail().length() <8) {
+			throw new LoginException("Please Enter A valid Email Id");
 		}
-		else if(loginDto.getPassword()==null || loginDto.getPassword().length() < 8) {
-			throw new LoginException("Invalid Password");
+		else if(loginDto.getPassword().trim().length()==0 || loginDto.getPassword().length() < 8) {
+			throw new LoginException("Password Should be of atleast 8 AphaNumeric Characters");
 		}
 	}
 	
 	public static void validateEmailDto(MailDTO maildto) throws MailException {
-		if(maildto.getEmail()==null || maildto.getEmail().length() < 3) {
+		if(maildto.getEmail()==null || !maildto.getEmail().matches(EMAIL_PATTERN)) {
 			throw new MailException("Invalid Email");
 		}
 		else if(maildto.getBody()==null) {
-			throw new MailException("Mail Body Null");
+			throw new MailException("Mail Body Cannot be Null");
 		}
 		else if(maildto.getSubject()==null) {
-			throw new MailException("Mail Subject Null");
+			throw new MailException("Mail Subject Cannot be Null");
 		}
 	}
 	public static void validateChangePassDto(ChangePassDTO changepass) throws ChangePassException {
@@ -88,9 +92,19 @@ public class Utility {
 	}
 
 	public static void validateUUID(String UUID) throws MalformedUUIDException {
-		// TODO Auto-generated method stub
+	
 		if(UUID==null) {
 			throw new MalformedUUIDException("Malformed UUID");
 		}
+	}
+	
+	public static File convert(MultipartFile file) throws IOException
+	{    
+	    File convFile = new File(file.getOriginalFilename());
+	    convFile.createNewFile(); 
+	    FileOutputStream fos = new FileOutputStream(convFile); 
+	    fos.write(file.getBytes());
+	    fos.close(); 
+	    return convFile;
 	}
 }

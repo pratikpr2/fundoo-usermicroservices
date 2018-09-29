@@ -1,19 +1,23 @@
 package com.bridgelabz.fundoonotes.user.services;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
-import javax.security.auth.login.LoginException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoonotes.user.exception.ActivationException;
 import com.bridgelabz.fundoonotes.user.exception.ChangePassException;
+import com.bridgelabz.fundoonotes.user.exception.LoginException;
 import com.bridgelabz.fundoonotes.user.exception.MalformedUUIDException;
 import com.bridgelabz.fundoonotes.user.exception.RegistrationException;
 import com.bridgelabz.fundoonotes.user.exception.TokenParsingException;
+import com.bridgelabz.fundoonotes.user.exception.UserNotFoundException;
 import com.bridgelabz.fundoonotes.user.model.ChangePassDTO;
 import com.bridgelabz.fundoonotes.user.model.LoginDTO;
 import com.bridgelabz.fundoonotes.user.model.MailDTO;
@@ -22,7 +26,7 @@ import com.bridgelabz.fundoonotes.user.model.RegistrationDTO;
 import com.bridgelabz.fundoonotes.user.model.User;
 import com.bridgelabz.fundoonotes.user.rabbitmq.ProducerService;
 import com.bridgelabz.fundoonotes.user.repository.TokenRepository;
-import com.bridgelabz.fundoonotes.user.repository.UserElasticRepository;
+import com.bridgelabz.fundoonotes.user.repository.UserHighLevelElasticRepo;
 import com.bridgelabz.fundoonotes.user.repository.UserRepository;
 import com.bridgelabz.fundoonotes.user.token.JwtToken;
 import com.bridgelabz.fundoonotes.user.utility.Utility;
@@ -46,7 +50,7 @@ public class UserServiceImpl implements UserService {
 	UserMailService mailservice;
 	
 	@Autowired
-	UserElasticRepository elasticRepo;
+	UserHighLevelElasticRepo highElasticRepo;
 	
 	@Autowired
 	PasswordEncoder passwordEncoder;
@@ -60,14 +64,20 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	JwtToken jwt;
 	
+	/*@Autowired
+	ImageServices imageService;*/
+	
+	/*@Autowired
+	MessageService sqsService;*/
+	
 	@Override
-	public String login(LoginDTO logUser) throws LoginException {
+	public String login(LoginDTO logUser) throws LoginException, MessagingException {
 
 		Utility.validateLoginUser(logUser);
 		
-		Optional<User> user = elasticRepo.findByUserEmail(logUser.getEmail());
+		Optional<User> user = highElasticRepo.findByUserEmail(logUser.getEmail());
 		
-		if(!user.isPresent()) {
+		if(user==null) {
 			throw new LoginException("User With Email "+logUser.getEmail()+" Not Registered");
 		}
 		else if(!user.get().isStatus()) {
@@ -91,17 +101,20 @@ public class UserServiceImpl implements UserService {
 		
 		producer.send(mailuser);
 		
+		//sqsService.sendMessage(mailuser);
 		return token;
 	}
 
 	@Override
-	public void register(RegistrationDTO regUser) throws RegistrationException ,MessagingException{
+	public String register(RegistrationDTO regUser) throws RegistrationException ,MessagingException{
 		
 		Utility.validateRegUser(regUser);
 		
-		Optional<User> checkuser = elasticRepo.findByUserEmail(regUser.getEmailId());
+		Optional<User> checkuser= null;
+				
+		checkuser=highElasticRepo.findByUserEmail(regUser.getEmailId());
 		
-		if(checkuser.isPresent()) {
+		if(checkuser!=null) {
 			throw new RegistrationException("User with Email "+ regUser.getEmailId()+" already Exists");
 		}
 		
@@ -112,7 +125,7 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(passwordEncoder.encode(regUser.getPassword()));
 		
 		mongoRepo.save(user);
-		elasticRepo.save(user);
+		highElasticRepo.save(user);
 		
 		String currentJwt = jwt.createJWT(user);
 		
@@ -125,21 +138,23 @@ public class UserServiceImpl implements UserService {
 		
 		producer.send(mailuser);
 		
+		return currentJwt;
+		
 	}
 
 	@Override
 	public void activateUser(String token) throws ActivationException, TokenParsingException {
 		
-		Optional<User> user =  elasticRepo.findById(jwt.getUserId(token));
+		Optional<User> user =  highElasticRepo.findById(jwt.getUserId(token));
 		
-		if(!user.isPresent()) {
+		if(user==null) {
 			throw new ActivationException("Account Activation failed");
 		}
 		
 		user.get().setStatus(true);
 		
 		mongoRepo.save(user.get());
-		elasticRepo.save(user.get());
+		highElasticRepo.save(user.get());
 		
 	}
 
@@ -151,25 +166,25 @@ public class UserServiceImpl implements UserService {
 		
 		String userId = tokenRepo.find(UUID);
 		
-		Optional<User> user = elasticRepo.findById(userId);
+		Optional<User> user = highElasticRepo.findById(userId);
 		
-		if(!user.isPresent()) {
+		if(user==null) {
 			throw new ActivationException("Invalid User");
 		}
 		
 		user.get().setPassword(passwordEncoder.encode(reset.getPassword()));
 		
 		mongoRepo.save(user.get());
-		elasticRepo.save(user.get());
+		highElasticRepo.save(user.get());
 		tokenRepo.delete(UUID);
 	}
 
 	@Override
 	public void forgetPassword(MailUser mail) throws MessagingException, ChangePassException {
 		
-		Optional<User> checkUser = elasticRepo.findByUserEmail(mail.getEmail());
+		Optional<User> checkUser = highElasticRepo.findByUserEmail(mail.getEmail());
 
-		if(!checkUser.isPresent()) {
+		if(checkUser==null) {
 			throw new ChangePassException("User Is Not Registered");
 		}
 		
@@ -184,6 +199,57 @@ public class UserServiceImpl implements UserService {
 		tokenRepo.save(UUID,checkUser.get().getUserId());
 		producer.send(usermail);
 	
+	}
+
+	@Override
+	public String addimage(String token, MultipartFile file) throws TokenParsingException, UserNotFoundException, IOException {
+		
+		/*Optional<User> user = highElasticRepo.findById(jwt.getUserId(token));
+		
+		if(user==null) {
+			throw new UserNotFoundException("Invalid User");
+		}
+		
+		String imageURl =imageService.addImages(jwt.getUserId(token), file);
+		
+		List<String> imageUrlList = user.get().getImageLink();
+		
+		imageUrlList.add(imageURl);
+		user.get().setImageLink(imageUrlList);
+		user.get().setProfileImageLink(imageURl);
+		
+		mongoRepo.save(user.get());
+		highElasticRepo.save(user.get());
+		
+		return imageURl;*/
+		
+		return null;
+		
+	}
+
+	@Override
+	public void removeImage(String token,String filename) throws TokenParsingException, UserNotFoundException {
+		/*
+		Optional<User> user = highElasticRepo.findById(jwt.getUserId(token));
+		
+		if(user==null) {
+			throw new UserNotFoundException("Invalid User");
+		}
+		
+		String imageUrl =imageService.deleteImages(user.get().getUserId(), filename);
+		
+		List<String> imageUrlList = user.get().getImageLink();
+		
+		imageUrlList.remove(imageUrl);
+		
+		if(user.get().getProfileImageLink().equals(imageUrl)){
+			user.get().setProfileImageLink(null);
+		}
+		
+		user.get().setImageLink(imageUrlList);
+		
+		mongoRepo.save(user.get());
+		highElasticRepo.save(user.get());*/
 	}
 	
 

@@ -1,6 +1,13 @@
 package com.bridgelabz.fundoonotes.user.model;
 
-public class MailDTO {
+import java.io.Serializable;
+
+public class MailDTO implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private String email;
 	
@@ -30,6 +37,11 @@ public class MailDTO {
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+
+	@Override
+	public String toString() {
+		return "MailDTO [email=" + email + ", subject=" + subject + ", body=" + body + "]";
 	}
 	
 	
